@@ -31,11 +31,12 @@ class MongoDBHelper {
   // Fetch products by category
   static Future<List<Product>> getProductsByCategory(String category) async {
     try {
-      DbCollection collection = await connect(); // Get the collection through the connect function
+      DbCollection collection = await connect();
       var products = await collection.find({'category': category}).toList();
+      print(products);
+      print('Fetching products for category: $category');
+      return products.map((map) => Product.fromMap(map)).toList();
 
-      // Deserialize the list of products
-      return products.map((productMap) => Product.fromMap(productMap)).toList();
     } catch (e) {
       print('Failed to fetch products: $e');
       return [];
