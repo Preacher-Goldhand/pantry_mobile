@@ -1,0 +1,81 @@
+// Blok buildscript musi pojawić się przed sekcją plugins
+buildscript {
+    ext.kotlin_version = '1.7.10'
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    // Definicja namespace, zapewniamy poprawny namespace dla aplikacji
+    namespace = "com.example.pantry_app"  // Zaktualizuj nazwę przestrzeni nazw, jeśli to konieczne
+    compileSdkVersion 34  // Ustawienie wersji SDK, dopasowane do Fluttera, ale możesz je dostosować
+
+    ndkVersion flutter.ndkVersion  // Ustawienie wersji NDK, jeśli używasz NDK w projekcie
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+
+    defaultConfig {
+        // Unikalny identyfikator aplikacji
+        applicationId = "com.example.pantry_app"  // Unikalny identyfikator aplikacji, zmień jeśli to konieczne
+        minSdkVersion flutter.minSdkVersion  // Wersja minimalna SDK
+        targetSdkVersion flutter.targetSdkVersion  // Wersja docelowa SDK
+        versionCode flutter.versionCode  // Kod wersji aplikacji, ustawiany przez Flutter
+        versionName flutter.versionName  // Nazwa wersji aplikacji
+    }
+
+    buildTypes {
+        release {
+            // Zabezpieczenie aplikacji na wersję release
+            signingConfig signingConfigs.debug  // Wersja debugowa, pamiętaj, by dodać podpisanie dla produkcji
+        }
+    }
+
+    // Dodajemy inne ustawienia Androida w jednym bloku
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    testOptions {
+        unitTests.includeAndroidResources = true
+    }
+
+    // Dodajemy inne wymagane konfiguracje
+    compileOptions {
+        coreLibraryDesugaringEnabled true
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+
+flutter {
+    source = "../.."  // Ścieżka do źródeł Flutter, upewnij się, że jest poprawna
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.10" // Lub nowsza wersja Kotlin
+    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'com.google.zxing:core:3.5.0'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.0'
+}
+
