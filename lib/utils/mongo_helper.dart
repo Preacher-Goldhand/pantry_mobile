@@ -103,4 +103,23 @@ class MongoDBHelper {
       print('Failed to update quantity count: $e');
     }
   }
+
+  // Fetch product's current quantity count by product id
+  static Future<int> getProductQuantityCount(String productId) async {
+    try {
+      DbCollection collection = await connect(); // Get the collection through the connect function
+
+      // Convert string productId to ObjectId for querying
+      var objectId = ObjectId.fromHexString(productId);
+
+      // Find the product by ID
+      var product = await collection.findOne(where.eq('_id', objectId));
+
+      // If product is found and has a valid 'quantityCount', return it, otherwise return 0
+      return product?['quantityCount'] ?? 0;
+    } catch (e) {
+      print('Error fetching product quantity count: $e');
+      return 0; // Return 0 if there's an error
+    }
+  }
 }
