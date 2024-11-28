@@ -12,6 +12,7 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _barcodeController = TextEditingController();
+  final TextEditingController _quantityCountController = TextEditingController();
   final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? _controller;
 
@@ -22,6 +23,14 @@ class _SearchScreenState extends State<SearchScreen> {
   String? _error;
   String? _selectedCategory = 'Dry';
   DateTime? _selectedDate;
+  int? quantityCount = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    // Set the initial value of quantity count to 1
+    _quantityCountController.text = '1';
+  }
 
   void _clearResult() {
     _productName = null;
@@ -65,7 +74,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Future<void> _saveToPantry() async {
     if (_productName != null && _selectedCategory != null) {
-      // Tworzymy obiekt typu Product
+      final quantityCount = int.tryParse(_quantityCountController.text.trim()) ?? 0;
+
       final product = Product(
         name: _productName,
         brand: _brandName,
@@ -74,10 +84,10 @@ class _SearchScreenState extends State<SearchScreen> {
         category: _selectedCategory,
         expirationDate: _selectedDate,
         barcode: _barcodeController.text,
+        quantityCount: quantityCount,
       );
 
       try {
-        // Przekazujemy obiekt Product do MongoDBHelper
         await MongoDBHelper.insertProduct(product);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Product saved successfully!')),
@@ -93,7 +103,6 @@ class _SearchScreenState extends State<SearchScreen> {
       );
     }
   }
-
 
   void _openQRScanner() {
     Navigator.of(context).push(MaterialPageRoute(builder: (context) {
@@ -199,6 +208,14 @@ class _SearchScreenState extends State<SearchScreen> {
                 Text('Brand: $_brandName'),
                 Text('Quantity: $_quantity'),
                 Text('Ingredients: $_ingredients'),
+                TextField(
+                  controller: _quantityCountController,
+                  decoration: InputDecoration(
+                    labelText: 'Enter quantity count',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
                 DropdownButton<String>(
                   value: _selectedCategory,
                   onChanged: (String? newValue) {

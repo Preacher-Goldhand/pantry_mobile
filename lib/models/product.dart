@@ -9,6 +9,7 @@ class Product {
   String? category;
   DateTime? expirationDate;
   String? barcode;
+  int? quantityCount;
 
   Product({
     this.id,
@@ -19,6 +20,7 @@ class Product {
     this.category,
     this.expirationDate,
     this.barcode,
+    this.quantityCount,
   });
 
   // Convert a Product object to a Map (Serialization)
@@ -32,6 +34,7 @@ class Product {
       'category': category,
       'expirationDate': expirationDate?.toIso8601String(),
       'barcode': barcode,
+      'quantityCount': quantityCount,
     };
   }
 
@@ -48,6 +51,7 @@ class Product {
           ? DateTime.parse(map['expirationDate'])
           : null,
       barcode: map['barcode'],
+      quantityCount: map['quantityCount'],
     );
   }
 }
