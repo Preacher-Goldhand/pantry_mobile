@@ -12,7 +12,6 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _barcodeController = TextEditingController();
-  final TextEditingController _quantityCountController = TextEditingController();
   final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? _controller;
 
@@ -23,13 +22,12 @@ class _SearchScreenState extends State<SearchScreen> {
   String? _error;
   String? _selectedCategory = 'Dry';
   DateTime? _selectedDate;
-  int? quantityCount = 1;
+  int quantityCount = 1;  // Ilość domyślnie ustawiona na 1
 
   @override
   void initState() {
     super.initState();
-    // Set the initial value of quantity count to 1
-    _quantityCountController.text = '1';
+    // Ustawienie początkowej wartości quantityCount na 1
   }
 
   void _clearResult() {
@@ -74,8 +72,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Future<void> _saveToPantry() async {
     if (_productName != null && _selectedCategory != null) {
-      final quantityCount = int.tryParse(_quantityCountController.text.trim()) ?? 0;
-
       final product = Product(
         name: _productName,
         brand: _brandName,
@@ -84,7 +80,7 @@ class _SearchScreenState extends State<SearchScreen> {
         category: _selectedCategory,
         expirationDate: _selectedDate,
         barcode: _barcodeController.text,
-        quantityCount: quantityCount,
+        quantityCount: quantityCount, // Zamiast TextField, używamy quantityCount
       );
 
       try {
@@ -142,6 +138,18 @@ class _SearchScreenState extends State<SearchScreen> {
         _selectedDate = picked;
       });
     }
+  }
+
+  void _increaseQuantity() {
+    setState(() {
+      quantityCount++;
+    });
+  }
+
+  void _decreaseQuantity() {
+    setState(() {
+      if (quantityCount > 1) quantityCount--;  // Zapobieganie wartościom mniejszym niż 1
+    });
   }
 
   @override
@@ -208,13 +216,19 @@ class _SearchScreenState extends State<SearchScreen> {
                 Text('Brand: $_brandName'),
                 Text('Quantity: $_quantity'),
                 Text('Ingredients: $_ingredients'),
-                TextField(
-                  controller: _quantityCountController,
-                  decoration: InputDecoration(
-                    labelText: 'Enter quantity count',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
+                // Now we have buttons for quantity adjustment
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.remove),
+                      onPressed: _decreaseQuantity,
+                    ),
+                    Text('$quantityCount'),
+                    IconButton(
+                      icon: Icon(Icons.add),
+                      onPressed: _increaseQuantity,
+                    ),
+                  ],
                 ),
                 DropdownButton<String>(
                   value: _selectedCategory,
