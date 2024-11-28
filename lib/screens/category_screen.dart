@@ -68,7 +68,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           _changeQuantityCount(product, -1, context);
                         },
                       ),
-                      FutureBuilder<int>(
+                      FutureBuilder<int>(  // Display current quantity
                         future: MongoDBHelper.getProductQuantityCount(product.id!),
                         builder: (context, quantitySnapshot) {
                           if (quantitySnapshot.connectionState == ConnectionState.waiting) {
@@ -89,6 +89,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           _changeQuantityCount(product, 1, context);
                         },
                       ),
+                      IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          _showDeleteConfirmationDialog(product, context);
+                        },
+                      ),
                     ],
                   ),
                 );
@@ -100,6 +106,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
+  // Change product quantity (increase or decrease)
   void _changeQuantityCount(Product product, int change, BuildContext context) {
     MongoDBHelper.getProductQuantityCount(product.id!).then((currentQuantity) {
       final newQuantityCount = currentQuantity + change;
@@ -124,5 +131,49 @@ class _CategoryScreenState extends State<CategoryScreen> {
       );
     });
   }
-}
 
+  // Show confirmation dialog before deleting product
+  void _showDeleteConfirmationDialog(Product product, BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Deletion'),
+          content: Text('Are you sure you want to delete ${product.name}?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () {
+                _deleteProduct(product, context);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Delete the product
+  void _deleteProduct(Product product, BuildContext context) {
+    MongoDBHelper.deleteProduct(product.id!).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${product.name} has been deleted')),
+      );
+      setState(() {
+        // Refresh the list after deletion
+        _productsFuture = MongoDBHelper.getProductsByCategory(widget.category);
+      });
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting product: $error')),
+      );
+    });
+  }
+}

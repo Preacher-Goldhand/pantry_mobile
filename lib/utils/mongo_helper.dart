@@ -28,6 +28,23 @@ class MongoDBHelper {
     }
   }
 
+  // Deleting products
+  static Future<void> deleteProduct(String productId) async {
+    try {
+      DbCollection collection = await connect();
+      var objectId = ObjectId.fromHexString(productId);  // Use productId to create ObjectId
+      var result = await collection.remove(where.eq('_id', objectId));
+      if (result['n'] > 0) {
+        print('Product deleted successfully');
+      } else {
+        print('Failed to delete product');
+      }
+    } catch (e) {
+      print('Error deleting product: $e');
+    }
+  }
+
+
   // Fetch products by category
   static Future<List<Product>> getProductsByCategory(String category) async {
     try {
