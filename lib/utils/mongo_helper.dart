@@ -44,7 +44,35 @@ class MongoDBHelper {
     }
   }
 
+// Update product expiration date
+  static Future<void> updateProductExpirationDate(Product product, DateTime newExpirationDate) async {
+    try {
+      DbCollection collection = await connect(); // Get the collection through the connect function
 
+      // Ensure the product has a valid ObjectId
+      if (product.id == null) {
+        print('Product does not have a valid ID');
+        return;
+      }
+
+      var objectId = ObjectId.fromHexString(product.id!); // Force unwrapping because it's ensured to be non-null
+
+      // Update the expirationDate field in the product
+      var result = await collection.update(
+        where.eq('_id', objectId),
+        modify.set('expirationDate', newExpirationDate.toIso8601String()),
+      );
+
+      // Check if the update was successful by inspecting the result
+      if (result['nModified'] > 0) {
+        print('Successfully updated expirationDate to $newExpirationDate');
+      } else {
+        print('No documents were modified.');
+      }
+    } catch (e) {
+      print('Failed to update expiration date: $e');
+    }
+  }
   // Fetch products by category
   static Future<List<Product>> getProductsByCategory(String category) async {
     try {

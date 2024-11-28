@@ -1,3 +1,5 @@
+// CategoryScreen.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../utils/mongo_helper.dart';
@@ -55,7 +57,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       Text('Brand: ${product.brand ?? 'Unknown'}'),
                       Text('Quantity: ${product.quantityCount ?? 0}'),
                       expirationDateFormatted != null
-                          ? Text('Exp: $expirationDateFormatted')
+                          ? GestureDetector(
+                        onTap: () => _pickDate(product, context),  // Add Date Picker functionality
+                        child: Text('Exp: $expirationDateFormatted', style: TextStyle(color: Colors.blue)),
+                      )
                           : SizedBox.shrink(),
                     ],
                   ),
@@ -175,5 +180,32 @@ class _CategoryScreenState extends State<CategoryScreen> {
         SnackBar(content: Text('Error deleting product: $error')),
       );
     });
+  }
+
+  // Date picker for changing expiration date
+  Future<void> _pickDate(Product product, BuildContext context) async {
+    DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: product.expirationDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (selectedDate != null && selectedDate != product.expirationDate) {
+      // Update the expiration date of the product in the database
+      MongoDBHelper.updateProductExpirationDate(product, selectedDate).then((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Expiration date updated to ${DateFormat('yyyy-MM-dd').format(selectedDate)}')),
+        );
+        setState(() {
+          // Refresh the products list after updating the date
+          _productsFuture = MongoDBHelper.getProductsByCategory(widget.category);
+        });
+      }).catchError((error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating expiration date: $error')),
+        );
+      });
+    }
   }
 }
