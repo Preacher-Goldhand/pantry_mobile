@@ -3,19 +3,32 @@ import 'package:intl/intl.dart';
 import '../utils/mongo_helper.dart';
 import '../models/product.dart';
 
-class CategoryScreen extends StatelessWidget {
+class CategoryScreen extends StatefulWidget {
   final String category;
 
   CategoryScreen({required this.category});
 
   @override
+  _CategoryScreenState createState() => _CategoryScreenState();
+}
+
+class _CategoryScreenState extends State<CategoryScreen> {
+  late Future<List<Product>> _productsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _productsFuture = MongoDBHelper.getProductsByCategory(widget.category);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('$category Products'),
+        title: Text('${widget.category} Products'),
       ),
       body: FutureBuilder<List<Product>>(
-        future: MongoDBHelper.getProductsByCategory(category),
+        future: _productsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -40,8 +53,7 @@ class CategoryScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Brand: ${product.brand ?? 'Unknown'}'),
-                      Text('Quantity: ${product.quantity ?? 0}'),
-                      // Move expiration date to where the quantity is
+                      Text('Quantity: ${product.quantityCount ?? 0}'),
                       expirationDateFormatted != null
                           ? Text('Exp: $expirationDateFormatted')
                           : SizedBox.shrink(),
@@ -50,7 +62,6 @@ class CategoryScreen extends StatelessWidget {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Mechanism to decrease/increase the quantity count
                       IconButton(
                         icon: Icon(Icons.remove),
                         onPressed: () {
@@ -90,15 +101,17 @@ class CategoryScreen extends StatelessWidget {
   }
 
   void _changeQuantityCount(Product product, int change, BuildContext context) {
-    // Fetch the current quantity count from the database before updating
     MongoDBHelper.getProductQuantityCount(product.id!).then((currentQuantity) {
       final newQuantityCount = currentQuantity + change;
       if (newQuantityCount >= 0) {
-        // Make sure the quantity is not negative
         MongoDBHelper.updateProductQuantityCount(product, newQuantityCount).then((_) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Updated quantity to $newQuantityCount')),
           );
+          setState(() {
+            // Manually refresh the products list after the update
+            _productsFuture = MongoDBHelper.getProductsByCategory(widget.category);
+          });
         }).catchError((error) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error updating quantity: $error')),
@@ -112,3 +125,4 @@ class CategoryScreen extends StatelessWidget {
     });
   }
 }
+
