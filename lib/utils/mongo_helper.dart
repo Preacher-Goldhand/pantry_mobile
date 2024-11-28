@@ -36,7 +36,6 @@ class MongoDBHelper {
       print(products);
       print('Fetching products for category: $category');
       return products.map((map) => Product.fromMap(map)).toList();
-
     } catch (e) {
       print('Failed to fetch products: $e');
       return [];
@@ -72,6 +71,36 @@ class MongoDBHelper {
     } catch (e) {
       print('Failed to fetch product by ID: $e');
       return null;
+    }
+  }
+
+  // Update product quantity count
+  static Future<void> updateProductQuantityCount(Product product, int newQuantityCount) async {
+    try {
+      DbCollection collection = await connect(); // Get the collection through the connect function
+
+      // Ensure the product has a valid ObjectId
+      if (product.id == null) {
+        print('Product does not have a valid ID');
+        return;
+      }
+
+      var objectId = ObjectId.fromHexString(product.id!); // Force unwrapping because it's ensured to be non-null
+
+      // Update the quantityCount field in the product
+      var result = await collection.update(
+        where.eq('_id', objectId),
+        modify.set('quantityCount', newQuantityCount),
+      );
+
+      // Check if the update was successful by inspecting the result
+      if (result['nModified'] > 0) {
+        print('Successfully updated quantityCount to $newQuantityCount');
+      } else {
+        print('No documents were modified.');
+      }
+    } catch (e) {
+      print('Failed to update quantity count: $e');
     }
   }
 }

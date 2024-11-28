@@ -41,12 +41,33 @@ class CategoryScreen extends StatelessWidget {
                     children: [
                       Text('Brand: ${product.brand ?? 'Unknown'}'),
                       Text('Quantity: ${product.quantity ?? 0}'),
-                      Text('Pieces: ${product.quantityCount ?? 0}'),
+                      // Przenosimy date ważności w miejsce ilości sztuk
+                      expirationDateFormatted != null
+                          ? Text('Exp: $expirationDateFormatted')
+                          : SizedBox.shrink(),
                     ],
                   ),
-                  trailing: expirationDateFormatted != null
-                      ? Text('Exp: $expirationDateFormatted')
-                      : null,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Mechanizm do zwiększania/zmniejszania ilości sztuk
+                      IconButton(
+                        icon: Icon(Icons.remove),
+                        onPressed: () {
+                          // Zmniejsz ilość sztuk w produkcie
+                          _updateQuantityCount(product, -1, context);
+                        },
+                      ),
+                      Text('${product.quantityCount ?? 0}'),
+                      IconButton(
+                        icon: Icon(Icons.add),
+                        onPressed: () {
+                          // Zwiększ ilość sztuk w produkcie
+                          _updateQuantityCount(product, 1, context);
+                        },
+                      ),
+                    ],
+                  ),
                 );
               },
             );
@@ -54,5 +75,22 @@ class CategoryScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  void _updateQuantityCount(Product product, int change, BuildContext context) {
+    // Funkcja do aktualizacji quantityCount w bazie danych
+    final newQuantityCount = (product.quantityCount ?? 0) + change;
+    if (newQuantityCount >= 0) {
+      // Upewnij się, że liczba sztuk nie jest ujemna
+      MongoDBHelper.updateProductQuantityCount(product, newQuantityCount).then((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Updated quantity to $newQuantityCount')),
+        );
+      }).catchError((error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating quantity: $error')),
+        );
+      });
+    }
   }
 }
