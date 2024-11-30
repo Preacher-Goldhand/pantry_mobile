@@ -8,7 +8,7 @@ import '../models/product.dart';
 class CategoryScreen extends StatefulWidget {
   final String category;
 
-  CategoryScreen({required this.category});
+  CategoryScreen({required this.category, required String searchQuery});
 
   @override
   _CategoryScreenState createState() => _CategoryScreenState();

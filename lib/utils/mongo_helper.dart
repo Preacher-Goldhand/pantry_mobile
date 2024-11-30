@@ -87,6 +87,32 @@ class MongoDBHelper {
     }
   }
 
+  static Future<List<Product>> getProductsByCategoryAndSearch(String category, String searchQuery) async {
+    try {
+      DbCollection collection = await connect();
+
+      // Dodajemy warunek, że searchQuery musi mieć co najmniej 2 znaki
+      if (searchQuery.length < 2) {
+        print('Search query must have at least 2 characters.');
+        return []; // Możesz zwrócić pustą listę lub przekazać komunikat o błędzie
+      }
+
+      // Tworzymy zapytanie z regex dla pola 'name' z minimalną długością 2 znaków
+      var query = {
+        'name': {'\$regex': searchQuery, '\$options': 'i'}, // Case-insensitive search dla nazwy
+      };
+
+      var products = await collection.find(query).toList();
+      print('Fetching products with search query: $searchQuery');
+      return products.map((map) => Product.fromMap(map)).toList();
+    } catch (e) {
+      print('Failed to fetch products: $e');
+      return [];
+    }
+  }
+
+
+
   // Fetch all products
   static Future<List<Product>> getAllProducts() async {
     try {
