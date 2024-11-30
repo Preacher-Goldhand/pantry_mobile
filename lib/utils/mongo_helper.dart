@@ -73,16 +73,37 @@ class MongoDBHelper {
       print('Failed to update expiration date: $e');
     }
   }
-  // Fetch products by category
-  static Future<List<Product>> getProductsByCategory(String category) async {
+
+  // Fetch products by category with optional sorting by expiration date
+  static Future<List<Product>> getProductsByCategory(String category, {bool ascending = true}) async {
     try {
       DbCollection collection = await connect();
-      var products = await collection.find({'category': category}).toList();
-      print(products);
-      print('Fetching products for category: $category');
-      return products.map((map) => Product.fromMap(map)).toList();
+
+      // Fetch products as Stream
+      var cursor = collection.find({'category': category});
+
+      // Convert Stream to List
+      var products = await cursor.toList();
+
+      // Sort by expiration date
+      if (ascending) {
+        products.sort((a, b) {
+          DateTime dateA = DateTime.parse(a['expirationDate'] ?? '1970-01-01');
+          DateTime dateB = DateTime.parse(b['expirationDate'] ?? '1970-01-01');
+          return dateA.compareTo(dateB);
+        });
+      } else {
+        products.sort((a, b) {
+          DateTime dateA = DateTime.parse(a['expirationDate'] ?? '1970-01-01');
+          DateTime dateB = DateTime.parse(b['expirationDate'] ?? '1970-01-01');
+          return dateB.compareTo(dateA);
+        });
+      }
+
+      // Convert fetched documents to Product models
+      return products.map((doc) => Product.fromMap(doc)).toList();
     } catch (e) {
-      print('Failed to fetch products: $e');
+      print("Error fetching products: $e");
       return [];
     }
   }
