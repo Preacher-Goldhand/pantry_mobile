@@ -22,12 +22,11 @@ class _SearchScreenState extends State<SearchScreen> {
   String? _error;
   String? _selectedCategory = 'Dry';
   DateTime? _selectedDate;
-  int quantityCount = 1;  // Ilość domyślnie ustawiona na 1
+  int quantityCount = 1;  // Default quantityCount value
 
   @override
   void initState() {
-    super.initState();
-    // Ustawienie początkowej wartości quantityCount na 1
+    super.initState(); // Default quantityCount value initialization
   }
 
   void _clearResult() {
@@ -38,6 +37,7 @@ class _SearchScreenState extends State<SearchScreen> {
     _error = null;
   }
 
+  // Searching a product's barcode
   Future<void> _searchBarcode(String barcode) async {
     final url = Uri.parse('https://world.openfoodfacts.org/api/v0/product/$barcode.json');
     try {
@@ -70,6 +70,7 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
+  // Saving found results in the Pantry screen
   Future<void> _saveToPantry() async {
     if (_productName != null && _selectedCategory != null) {
       final product = Product(
@@ -80,7 +81,7 @@ class _SearchScreenState extends State<SearchScreen> {
         category: _selectedCategory,
         expirationDate: _selectedDate,
         barcode: _barcodeController.text,
-        quantityCount: quantityCount, // Zamiast TextField, używamy quantityCount
+        quantityCount: quantityCount,
       );
 
       try {
@@ -100,6 +101,7 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
+  // Scaning the product's barcode
   void _openQRScanner() {
     Navigator.of(context).push(MaterialPageRoute(builder: (context) {
       return Scaffold(
@@ -125,6 +127,7 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  // Select expiration date
   Future<void> _selectDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -140,18 +143,21 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
+  // Incremeneting the product's pieces
   void _increaseQuantity() {
     setState(() {
       quantityCount++;
     });
   }
 
+  // Decremeneting the product's pieces
   void _decreaseQuantity() {
     setState(() {
-      if (quantityCount > 1) quantityCount--;  // Zapobieganie wartościom mniejszym niż 1
+      if (quantityCount > 1) quantityCount--;
     });
   }
 
+  // Dispose QR Viewer connection
   @override
   void dispose() {
     _controller?.dispose();
@@ -170,7 +176,6 @@ class _SearchScreenState extends State<SearchScreen> {
             label: Text('Scan barcode'),
           ),
           SizedBox(height: 20),
-          // Zastosowanie Row do umieszczenia pola tekstowego i ikony w jednej linii
           Row(
             children: [
               Expanded(

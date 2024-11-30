@@ -26,7 +26,7 @@ class Product {
   // Convert a Product object to a Map (Serialization)
   Map<String, dynamic> toMap() {
     return {
-      '_id': id != null ? ObjectId.fromHexString(id!) : null,  // Convert to ObjectId if id is provided as String
+      '_id': id != null ? ObjectId.fromHexString(id!) : null,
       'name': name,
       'brand': brand,
       'quantity': quantity,
@@ -41,7 +41,7 @@ class Product {
   // Convert a Map to a Product object (Deserialization)
   factory Product.fromMap(Map<String, dynamic> map) {
     return Product(
-      id: map['_id'] != null ? (map['_id'] as ObjectId).toHexString() : null,  // Convert ObjectId to String
+      id: map['_id'] != null ? (map['_id'] as ObjectId).toHexString() : null,
       name: map['name'],
       brand: map['brand'],
       quantity: map['quantity'],

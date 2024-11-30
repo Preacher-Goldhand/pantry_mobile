@@ -31,7 +31,7 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text('Pantry App'),
+        title: Text(''),
         actions: [
           GestureDetector(
             onTap: () {

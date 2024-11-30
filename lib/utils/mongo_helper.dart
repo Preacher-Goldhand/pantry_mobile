@@ -1,26 +1,21 @@
 import 'package:mongo_dart/mongo_dart.dart';
-import 'package:pantry/models/product.dart';  // Import the Product model
+import 'package:pantry/models/product.dart';
 
 class MongoDBHelper {
-  static final _dbUrl = 'mongodb://10.0.2.2:27017/PantryApp'; // MongoDB address
-  static final _collectionName = 'products'; // Collection name
+  static final _dbUrl = 'mongodb://10.0.2.2:27017/PantryApp';
+  static final _collectionName = 'products';
 
-  // Connect function to handle db initialization
   static Future<DbCollection> connect() async {
-    Db db = Db(_dbUrl); // Create a Db instance
-    await db.open(); // Open the database connection
-    return db.collection(_collectionName); // Return the collection object
+    Db db = Db(_dbUrl);
+    await db.open();
+    return db.collection(_collectionName);
   }
 
   // Inserting a product
   static Future<void> insertProduct(Product product) async {
     try {
-      DbCollection collection = await connect(); // Get the collection through the connect function
-
-      // Convert the Product to Map before inserting
+      DbCollection collection = await connect();
       Map<String, dynamic> productMap = product.toMap();
-
-      // Insert product into the collection
       await collection.insert(productMap);
       print('Product saved to pantry');
     } catch (e) {
@@ -32,7 +27,7 @@ class MongoDBHelper {
   static Future<void> deleteProduct(String productId) async {
     try {
       DbCollection collection = await connect();
-      var objectId = ObjectId.fromHexString(productId);  // Use productId to create ObjectId
+      var objectId = ObjectId.fromHexString(productId);
       var result = await collection.remove(where.eq('_id', objectId));
       if (result['n'] > 0) {
         print('Product deleted successfully');
@@ -44,26 +39,22 @@ class MongoDBHelper {
     }
   }
 
-// Update product expiration date
+  // Update product expiration date
   static Future<void> updateProductExpirationDate(Product product, DateTime newExpirationDate) async {
     try {
-      DbCollection collection = await connect(); // Get the collection through the connect function
+      DbCollection collection = await connect();
 
-      // Ensure the product has a valid ObjectId
       if (product.id == null) {
         print('Product does not have a valid ID');
         return;
       }
 
-      var objectId = ObjectId.fromHexString(product.id!); // Force unwrapping because it's ensured to be non-null
-
-      // Update the expirationDate field in the product
+      var objectId = ObjectId.fromHexString(product.id!);
       var result = await collection.update(
         where.eq('_id', objectId),
         modify.set('expirationDate', newExpirationDate.toIso8601String()),
       );
 
-      // Check if the update was successful by inspecting the result
       if (result['nModified'] > 0) {
         print('Successfully updated expirationDate to $newExpirationDate');
       } else {
@@ -74,18 +65,39 @@ class MongoDBHelper {
     }
   }
 
+  // Update product quantity count
+  static Future<void> updateProductQuantityCount(Product product, int newQuantityCount) async {
+    try {
+      DbCollection collection = await connect();
+
+      if (product.id == null) {
+        print('Product does not have a valid ID');
+        return;
+      }
+
+      var objectId = ObjectId.fromHexString(product.id!);
+      var result = await collection.update(
+        where.eq('_id', objectId),
+        modify.set('quantityCount', newQuantityCount),
+      );
+
+      if (result['nModified'] > 0) {
+        print('Successfully updated quantityCount to $newQuantityCount');
+      } else {
+        print('No documents were modified.');
+      }
+    } catch (e) {
+      print('Failed to update quantity count: $e');
+    }
+  }
+
   // Fetch products by category with optional sorting by expiration date
   static Future<List<Product>> getProductsByCategory(String category, {bool ascending = true}) async {
     try {
       DbCollection collection = await connect();
-
-      // Fetch products as Stream
       var cursor = collection.find({'category': category});
-
-      // Convert Stream to List
       var products = await cursor.toList();
 
-      // Sort by expiration date
       if (ascending) {
         products.sort((a, b) {
           DateTime dateA = DateTime.parse(a['expirationDate'] ?? '1970-01-01');
@@ -112,15 +124,11 @@ class MongoDBHelper {
     try {
       DbCollection collection = await connect();
 
-      // Dodajemy warunek, że searchQuery musi mieć co najmniej 2 znaki
       if (searchQuery.length < 2) {
-        print('Search query must have at least 2 characters.');
-        return []; // Możesz zwrócić pustą listę lub przekazać komunikat o błędzie
+        return [];
       }
-
-      // Tworzymy zapytanie z regex dla pola 'name' z minimalną długością 2 znaków
       var query = {
-        'name': {'\$regex': searchQuery, '\$options': 'i'}, // Case-insensitive search dla nazwy
+        'name': {'\$regex': searchQuery, '\$options': 'i'},
       };
 
       var products = await collection.find(query).toList();
@@ -132,14 +140,11 @@ class MongoDBHelper {
     }
   }
 
-
   // Fetch all products
   static Future<List<Product>> getAllProducts() async {
     try {
-      DbCollection collection = await connect(); // Get the collection through the connect function
+      DbCollection collection = await connect();
       var products = await collection.find().toList();
-
-      // Deserialize the list of products
       return products.map((productMap) => Product.fromMap(productMap)).toList();
     } catch (e) {
       print('Failed to fetch products: $e');
@@ -150,8 +155,7 @@ class MongoDBHelper {
   // Fetch product by _id
   static Future<Product?> getProductById(String id) async {
     try {
-      DbCollection collection = await connect(); // Get the collection through the connect function
-
+      DbCollection collection = await connect();
       var objectId = ObjectId.fromHexString(id);
       var productMap = await collection.findOne(where.eq('_id', objectId));
 
@@ -165,48 +169,12 @@ class MongoDBHelper {
     }
   }
 
-  // Update product quantity count
-  static Future<void> updateProductQuantityCount(Product product, int newQuantityCount) async {
-    try {
-      DbCollection collection = await connect(); // Get the collection through the connect function
-
-      // Ensure the product has a valid ObjectId
-      if (product.id == null) {
-        print('Product does not have a valid ID');
-        return;
-      }
-
-      var objectId = ObjectId.fromHexString(product.id!); // Force unwrapping because it's ensured to be non-null
-
-      // Update the quantityCount field in the product
-      var result = await collection.update(
-        where.eq('_id', objectId),
-        modify.set('quantityCount', newQuantityCount),
-      );
-
-      // Check if the update was successful by inspecting the result
-      if (result['nModified'] > 0) {
-        print('Successfully updated quantityCount to $newQuantityCount');
-      } else {
-        print('No documents were modified.');
-      }
-    } catch (e) {
-      print('Failed to update quantity count: $e');
-    }
-  }
-
   // Fetch product's current quantity count by product id
   static Future<int> getProductQuantityCount(String productId) async {
     try {
-      DbCollection collection = await connect(); // Get the collection through the connect function
-
-      // Convert string productId to ObjectId for querying
+      DbCollection collection = await connect();
       var objectId = ObjectId.fromHexString(productId);
-
-      // Find the product by ID
       var product = await collection.findOne(where.eq('_id', objectId));
-
-      // If product is found and has a valid 'quantityCount', return it, otherwise return 0
       return product?['quantityCount'] ?? 0;
     } catch (e) {
       print('Error fetching product quantity count: $e');

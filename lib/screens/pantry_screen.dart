@@ -9,23 +9,22 @@ class PantryScreen extends StatefulWidget {
 }
 
 class _PantryScreenState extends State<PantryScreen> {
-  String _searchQuery = ''; // Przechowuje zapytanie wyszukiwania
-  List<Product> _foundProducts = []; // Przechowuje wyniki wyszukiwania
-  bool _isLoading = false; // Status ładowania danych
-  bool _isSearchActive = false; // Flaga aktywnego wyszukiwania
+  String _searchQuery = '';
+  List<Product> _foundProducts = [];
+  bool _isLoading = false;
+  bool _isSearchActive = false;
 
   Future<void> _searchProducts(String query) async {
     setState(() {
       _isLoading = true;
     });
     try {
-      // Pobierz produkty pasujące do wyszukiwania
       final products = await MongoDBHelper.getProductsByCategoryAndSearch('', query);
       setState(() {
         _foundProducts = products;
       });
     } catch (e) {
-      print('Błąd podczas wyszukiwania produktów: $e');
+      print('Error while searching products: $e');
     } finally {
       setState(() {
         _isLoading = false;
@@ -33,12 +32,11 @@ class _PantryScreenState extends State<PantryScreen> {
     }
   }
 
-  // Funkcja czyszcząca zapytanie wyszukiwania
   void _clearSearch() {
     setState(() {
-      _searchQuery = ''; // Wyczyść zapytanie
-      _foundProducts = []; // Wyczyść wyniki wyszukiwania
-      _isSearchActive = false; // Zamknij wyszukiwanie
+      _searchQuery = '';
+      _foundProducts = [];
+      _isSearchActive = false;
     });
   }
 
@@ -49,15 +47,13 @@ class _PantryScreenState extends State<PantryScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Stack(
           children: [
-            // Siatka kategorii
             Column(
               children: [
                 Row(
                   children: [
-                    // Pole wyszukiwania
                     Expanded(
                       child: TextField(
-                        controller: TextEditingController(text: _searchQuery), // Ustawia tekst na _searchQuery
+                        controller: TextEditingController(text: _searchQuery),
                         onChanged: (query) {
                           setState(() {
                             _searchQuery = query;
@@ -66,12 +62,10 @@ class _PantryScreenState extends State<PantryScreen> {
                         decoration: InputDecoration(
                           labelText: 'Search in Pantry',
                           prefixIcon: Icon(Icons.search),
-                          suffixIcon: _searchQuery.isNotEmpty
-                              ? IconButton(
+                          suffixIcon: IconButton(
                             icon: Icon(Icons.clear),
-                            onPressed: _clearSearch, // Wyczyść zapytanie
-                          )
-                              : null,
+                            onPressed: _clearSearch,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -79,15 +73,14 @@ class _PantryScreenState extends State<PantryScreen> {
                       ),
                     ),
                     SizedBox(width: 8),
-                    // Strzałka do uruchomienia wyszukiwania
                     IconButton(
                       icon: Icon(Icons.arrow_forward),
                       onPressed: () {
                         if (_searchQuery.isNotEmpty) {
                           setState(() {
-                            _isSearchActive = true; // Aktywuj wyniki wyszukiwania
+                            _isSearchActive = true;
                           });
-                          _searchProducts(_searchQuery); // Rozpocznij wyszukiwanie
+                          _searchProducts(_searchQuery);
                         }
                       },
                     ),
@@ -113,11 +106,9 @@ class _PantryScreenState extends State<PantryScreen> {
                 ),
               ],
             ),
-
-            // Widok wyników wyszukiwania przykrywający siatkę
             if (_isSearchActive)
               Container(
-                color: Colors.black.withOpacity(0.5), // Przezroczysty czarny tło
+                color: Colors.black.withOpacity(0.5),
                 child: Column(
                   children: [
                     SizedBox(height: 16),
@@ -137,7 +128,6 @@ class _PantryScreenState extends State<PantryScreen> {
                               subtitle: Text(product.category ?? 'Unknown category'),
                               trailing: Icon(Icons.arrow_forward),
                               onTap: () {
-                                // Akcja na kliknięcie w produkt
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -155,7 +145,7 @@ class _PantryScreenState extends State<PantryScreen> {
                     ),
                     IconButton(
                       icon: Icon(Icons.clear, color: Colors.white, size: 30),
-                      onPressed: _clearSearch, // Zamknięcie wyników wyszukiwania
+                      onPressed: _clearSearch,
                     ),
                   ],
                 ),
@@ -181,7 +171,10 @@ class PantryTile extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CategoryScreen(category: category, searchQuery: '',),
+            builder: (context) => CategoryScreen(
+              category: category,
+              searchQuery: '',
+            ),
           ),
         );
       },
