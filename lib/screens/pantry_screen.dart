@@ -87,7 +87,6 @@ class _PantryScreenState extends State<PantryScreen> {
                   ],
                 ),
                 SizedBox(height: 16),
-                // Siatka kategorii
                 Expanded(
                   child: GridView.count(
                     crossAxisCount: 2,
@@ -97,9 +96,11 @@ class _PantryScreenState extends State<PantryScreen> {
                     children: [
                       PantryTile(label: 'Fresh', icon: Icons.local_florist, category: 'Fresh'),
                       PantryTile(label: 'Dry', icon: Icons.grain, category: 'Dry'),
+                      PantryTile(label: 'Frozen', icon: Icons.icecream, category: 'Frozen'),
                       PantryTile(label: 'Drinks', icon: Icons.local_drink, category: 'Drinks'),
                       PantryTile(label: 'Fats', icon: Icons.bakery_dining, category: 'Fats'),
                       PantryTile(label: 'Dairy', icon: Icons.icecream, category: 'Dairy'),
+                      PantryTile(label: 'Canned', icon: Icons.set_meal, category: 'Canned'),
                       PantryTile(label: 'Other', icon: Icons.food_bank, category: 'Other'),
                     ],
                   ),

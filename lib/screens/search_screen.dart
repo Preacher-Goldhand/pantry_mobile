@@ -248,7 +248,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       _selectedCategory = newValue;
                     });
                   },
-                  items: <String>['Dry', 'Drinks', 'Fats', 'Dairy', 'Other']
+                  items: <String>['Fresh', 'Dry', 'Frozen', 'Drinks', 'Fats', 'Dairy', 'Canned', 'Other']
                       .map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
