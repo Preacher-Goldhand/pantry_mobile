@@ -170,37 +170,43 @@ class _SearchScreenState extends State<SearchScreen> {
             label: Text('Scan barcode'),
           ),
           SizedBox(height: 20),
-          TextField(
-            controller: _barcodeController,
-            decoration: InputDecoration(
-              labelText: 'Enter barcode',
-              border: OutlineInputBorder(),
-              suffixIcon: IconButton(
-                icon: Icon(Icons.clear),
+          // Zastosowanie Row do umieszczenia pola tekstowego i ikony w jednej linii
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _barcodeController,
+                  decoration: InputDecoration(
+                    labelText: 'Enter barcode',
+                    border: OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(Icons.clear),
+                      onPressed: () {
+                        setState(() {
+                          _barcodeController.clear();
+                          _clearResult();
+                          _error = null;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.arrow_forward),
                 onPressed: () {
-                  setState(() {
-                    _barcodeController.clear();
+                  final barcode = _barcodeController.text.trim();
+                  if (barcode.isNotEmpty) {
                     _clearResult();
-                    _error = null;
-                  });
+                    _searchBarcode(barcode);
+                  } else {
+                    setState(() {
+                      _error = 'Please enter a barcode';
+                    });
+                  }
                 },
               ),
-            ),
-          ),
-          SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () {
-              final barcode = _barcodeController.text.trim();
-              if (barcode.isNotEmpty) {
-                _clearResult();
-                _searchBarcode(barcode);
-              } else {
-                setState(() {
-                  _error = 'Please enter a barcode';
-                });
-              }
-            },
-            child: Text('Find'),
+            ],
           ),
           SizedBox(height: 30),
           if (_error != null)
