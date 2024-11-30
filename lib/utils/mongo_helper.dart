@@ -112,7 +112,6 @@ class MongoDBHelper {
   }
 
 
-
   // Fetch all products
   static Future<List<Product>> getAllProducts() async {
     try {

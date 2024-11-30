@@ -12,6 +12,7 @@ class _PantryScreenState extends State<PantryScreen> {
   String _searchQuery = ''; // Przechowuje zapytanie wyszukiwania
   List<Product> _foundProducts = []; // Przechowuje wyniki wyszukiwania
   bool _isLoading = false; // Status ładowania danych
+  bool _isSearchActive = false; // Flaga aktywnego wyszukiwania
 
   Future<void> _searchProducts(String query) async {
     setState(() {
@@ -32,86 +33,131 @@ class _PantryScreenState extends State<PantryScreen> {
     }
   }
 
+  // Funkcja czyszcząca zapytanie wyszukiwania
+  void _clearSearch() {
+    setState(() {
+      _searchQuery = ''; // Wyczyść zapytanie
+      _foundProducts = []; // Wyczyść wyniki wyszukiwania
+      _isSearchActive = false; // Zamknij wyszukiwanie
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
+        child: Stack(
           children: [
-            // Pole wyszukiwania
-            TextField(
-              onChanged: (query) {
-                setState(() {
-                  _searchQuery = query;
-                });
-                if (query.isNotEmpty) {
-                  _searchProducts(query);
-                } else {
-                  setState(() {
-                    _foundProducts = [];
-                  });
-                }
-              },
-              decoration: InputDecoration(
-                labelText: 'Wyszukaj produkty',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
             // Siatka kategorii
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16.0,
-                mainAxisSpacing: 16.0,
-                childAspectRatio: 1.3,
-                children: [
-                  PantryTile(label: 'Fresh', icon: Icons.local_florist, category: 'Fresh'),
-                  PantryTile(label: 'Dry', icon: Icons.grain, category: 'Dry'),
-                  PantryTile(label: 'Drinks', icon: Icons.local_drink, category: 'Drinks'),
-                  PantryTile(label: 'Fats', icon: Icons.bakery_dining, category: 'Fats'),
-                  PantryTile(label: 'Dairy', icon: Icons.icecream, category: 'Dairy'),
-                  PantryTile(label: 'Other', icon: Icons.food_bank, category: 'Other'),
-                ],
-              ),
+            Column(
+              children: [
+                Row(
+                  children: [
+                    // Pole wyszukiwania
+                    Expanded(
+                      child: TextField(
+                        controller: TextEditingController(text: _searchQuery), // Ustawia tekst na _searchQuery
+                        onChanged: (query) {
+                          setState(() {
+                            _searchQuery = query;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Search in Pantry',
+                          prefixIcon: Icon(Icons.search),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                            icon: Icon(Icons.clear),
+                            onPressed: _clearSearch, // Wyczyść zapytanie
+                          )
+                              : null,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    // Strzałka do uruchomienia wyszukiwania
+                    IconButton(
+                      icon: Icon(Icons.arrow_forward),
+                      onPressed: () {
+                        if (_searchQuery.isNotEmpty) {
+                          setState(() {
+                            _isSearchActive = true; // Aktywuj wyniki wyszukiwania
+                          });
+                          _searchProducts(_searchQuery); // Rozpocznij wyszukiwanie
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                // Siatka kategorii
+                Expanded(
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16.0,
+                    mainAxisSpacing: 16.0,
+                    childAspectRatio: 1.3,
+                    children: [
+                      PantryTile(label: 'Fresh', icon: Icons.local_florist, category: 'Fresh'),
+                      PantryTile(label: 'Dry', icon: Icons.grain, category: 'Dry'),
+                      PantryTile(label: 'Drinks', icon: Icons.local_drink, category: 'Drinks'),
+                      PantryTile(label: 'Fats', icon: Icons.bakery_dining, category: 'Fats'),
+                      PantryTile(label: 'Dairy', icon: Icons.icecream, category: 'Dairy'),
+                      PantryTile(label: 'Other', icon: Icons.food_bank, category: 'Other'),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 16),
-            // Wyniki wyszukiwania
-            if (_searchQuery.isNotEmpty)
-              Expanded(
-                child: _isLoading
-                    ? Center(child: CircularProgressIndicator())
-                    : _foundProducts.isEmpty
-                    ? Center(child: Text('Nie znaleziono produktów.'))
-                    : ListView.builder(
-                  itemCount: _foundProducts.length,
-                  itemBuilder: (context, index) {
-                    final product = _foundProducts[index];
-                    return Card(
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      child: ListTile(
-                        title: Text(product.name ?? 'Brak nazwy'),
-                        subtitle: Text(product.category ?? 'Nieznana kategoria'),
-                        trailing: Icon(Icons.arrow_forward),
-                        onTap: () {
-                          // Akcja na kliknięcie w produkt
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CategoryScreen(
-                                category: product.category ?? 'Nieznana kategoria',
-                                searchQuery: product.name ?? '',
-                              ),
+
+            // Widok wyników wyszukiwania przykrywający siatkę
+            if (_isSearchActive)
+              Container(
+                color: Colors.black.withOpacity(0.5), // Przezroczysty czarny tło
+                child: Column(
+                  children: [
+                    SizedBox(height: 16),
+                    Expanded(
+                      child: _isLoading
+                          ? Center(child: CircularProgressIndicator())
+                          : _foundProducts.isEmpty
+                          ? Center(child: Text('No products found.'))
+                          : ListView.builder(
+                        itemCount: _foundProducts.length,
+                        itemBuilder: (context, index) {
+                          final product = _foundProducts[index];
+                          return Card(
+                            margin: EdgeInsets.symmetric(vertical: 8),
+                            child: ListTile(
+                              title: Text(product.name ?? 'No name'),
+                              subtitle: Text(product.category ?? 'Unknown category'),
+                              trailing: Icon(Icons.arrow_forward),
+                              onTap: () {
+                                // Akcja na kliknięcie w produkt
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CategoryScreen(
+                                      category: product.category ?? 'Unknown category',
+                                      searchQuery: product.name ?? '',
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           );
                         },
                       ),
-                    );
-                  },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.clear, color: Colors.white, size: 30),
+                      onPressed: _clearSearch, // Zamknięcie wyników wyszukiwania
+                    ),
+                  ],
                 ),
               ),
           ],
