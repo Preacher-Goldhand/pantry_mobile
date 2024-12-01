@@ -103,7 +103,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Brand: ${product.brand ?? 'Unknown'}'),
-                            Text('Quantity: ${product.quantityCount ?? 0}'),
+                            Text('Quantity: ${product.quantity ?? 0}'),
                             expirationDateFormatted != null
                                 ? GestureDetector(
                               onTap: () => _pickDate(product, context),  // Add Date Picker functionality
