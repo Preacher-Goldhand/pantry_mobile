@@ -14,7 +14,7 @@ class CategoryScreen extends StatefulWidget {
 
 class _CategoryScreenState extends State<CategoryScreen> {
   late Future<List<Product>> _productsFuture;
-  String _sortOrder = 'Ascending'; // Default sorting order
+  String _sortOrder = 'Ascending';
 
   @override
   void initState() {
@@ -25,7 +25,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
   void _loadProducts() {
     _productsFuture = MongoDBHelper.getProductsByCategory(
       widget.category,
-      ascending: _sortOrder == 'Ascending', // Ascending if 'Ascending' selected
+      ascending: _sortOrder == 'Ascending',
     );
   }
 
@@ -38,7 +38,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Sorting dropdown menu placed below the category title
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: DropdownButton<String>(
@@ -47,34 +46,33 @@ class _CategoryScreenState extends State<CategoryScreen> {
               onChanged: (String? newValue) {
                 setState(() {
                   _sortOrder = newValue!;
-                  _loadProducts();  // Reload products after changing sorting order
+                  _loadProducts();
                 });
               },
               items: [
-                DropdownMenuItem<String>(
+                DropdownMenuItem(
                   value: 'Ascending',
                   child: Row(
                     children: [
-                      Icon(Icons.arrow_upward, size: 20),  // Up arrow for Ascending
+                      Icon(Icons.arrow_upward, size: 20),
                       SizedBox(width: 8),
-                      Text('Exp Date'),  // "Exp Date" with arrow up
+                      Text('Exp Date'),
                     ],
                   ),
                 ),
-                DropdownMenuItem<String>(
+                DropdownMenuItem(
                   value: 'Descending',
                   child: Row(
                     children: [
-                      Icon(Icons.arrow_downward, size: 20),  // Down arrow for Descending
+                      Icon(Icons.arrow_downward, size: 20),
                       SizedBox(width: 8),
-                      Text('Exp Date'),  // "Exp Date" with arrow down
+                      Text('Exp Date'),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          // Product list displayed below the sorting dropdown
           Expanded(
             child: FutureBuilder<List<Product>>(
               future: _productsFuture,
@@ -101,19 +99,19 @@ class _CategoryScreenState extends State<CategoryScreen> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Conditionally display brand label
                             if (product.brand != null && product.brand!.isNotEmpty)
                               Text('Brand: ${product.brand}'),
-                            Text('Quantity: ${product.quantity ?? 0}'),
-                            // Display grammage and unit if available
+                            // Wyświetl Quantity tylko, jeśli nie jest null i jest różne od 0
+                            if (product.quantity != null && product.quantity!.isNotEmpty && product.quantity != "0")
+                              Text('Quantity: ${product.quantity}'),
+                            // Wyświetl Grammage tylko, jeśli jest dostępne
                             if (product.grammage != null && product.unit != null)
-                              Text('Grammage: ${product.grammage} ${product.unit}'),
-                            expirationDateFormatted != null
-                                ? GestureDetector(
-                              onTap: () => _pickDate(product, context),  // Add Date Picker functionality
-                              child: Text('Exp: $expirationDateFormatted', style: TextStyle(color: Colors.blue)),
-                            )
-                                : SizedBox.shrink(),
+                              Text('Quantity: ${product.grammage} ${product.unit}'),
+                            if (expirationDateFormatted != null)
+                              GestureDetector(
+                                onTap: () => _pickDate(product, context),
+                                child: Text('Exp: $expirationDateFormatted', style: TextStyle(color: Colors.blue)),
+                              ),
                           ],
                         ),
                         trailing: Row(
@@ -125,7 +123,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                 _changeQuantityCount(product, -1, context);
                               },
                             ),
-                            FutureBuilder<int>(  // Display current quantity
+                            FutureBuilder<int>(
                               future: MongoDBHelper.getProductQuantityCount(product.id!),
                               builder: (context, quantitySnapshot) {
                                 if (quantitySnapshot.connectionState == ConnectionState.waiting) {
@@ -166,7 +164,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
-  // Change product quantity (increase or decrease)
   void _changeQuantityCount(Product product, int change, BuildContext context) {
     MongoDBHelper.getProductQuantityCount(product.id!).then((currentQuantity) {
       final newQuantityCount = currentQuantity + change;
@@ -176,7 +173,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
             SnackBar(content: Text('Updated quantity to $newQuantityCount')),
           );
           setState(() {
-            // Refresh the products list after update
             _loadProducts();
           });
         }).catchError((error) {
@@ -192,7 +188,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
     });
   }
 
-  // Show confirmation dialog before deleting product
   void _showDeleteConfirmationDialog(Product product, BuildContext context) {
     showDialog(
       context: context,
@@ -220,14 +215,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
-  // Delete the product
   void _deleteProduct(Product product, BuildContext context) {
     MongoDBHelper.deleteProduct(product.id!).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('${product.name} has been deleted')),
       );
       setState(() {
-        // Refresh the list after deletion
         _loadProducts();
       });
     }).catchError((error) {
@@ -237,7 +230,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
     });
   }
 
-  // Date picker for changing expiration date
   Future<void> _pickDate(Product product, BuildContext context) async {
     DateTime? selectedDate = await showDatePicker(
       context: context,
@@ -247,13 +239,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
 
     if (selectedDate != null && selectedDate != product.expirationDate) {
-      // Update the expiration date of the product in the database
       MongoDBHelper.updateProductExpirationDate(product, selectedDate).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Expiration date updated to ${DateFormat('yyyy-MM-dd').format(selectedDate)}')),
         );
         setState(() {
-          // Refresh the products list after updating the date
           _loadProducts();
         });
       }).catchError((error) {
