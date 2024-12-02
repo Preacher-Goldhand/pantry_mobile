@@ -23,7 +23,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
   }
 
   void _loadProducts() {
-    // Load products with the selected sorting option
     _productsFuture = MongoDBHelper.getProductsByCategory(
       widget.category,
       ascending: _sortOrder == 'Ascending', // Ascending if 'Ascending' selected
