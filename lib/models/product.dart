@@ -11,6 +11,8 @@ class Product {
   String? barcode;
   int? quantityCount;
   int? expirationDays;
+  double? grammage;
+  String? unit;
 
   Product({
     this.id,
@@ -23,6 +25,8 @@ class Product {
     this.barcode,
     this.quantityCount,
     this.expirationDays,
+    this.grammage,
+    this.unit,
   });
 
   // Convert a Product object to a Map (Serialization)
@@ -38,6 +42,8 @@ class Product {
       'barcode': barcode,
       'quantityCount': quantityCount,
       'expirationDays': expirationDays,
+      'grammage': grammage,
+      'unit': unit,
     };
   }
 
@@ -56,6 +62,8 @@ class Product {
       barcode: map['barcode'],
       quantityCount: map['quantityCount'],
       expirationDays: map['expirationDays'],
+      grammage: map['grammage'],
+      unit: map['unit'],
     );
   }
 }

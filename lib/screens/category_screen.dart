@@ -101,8 +101,13 @@ class _CategoryScreenState extends State<CategoryScreen> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Brand: ${product.brand ?? 'Unknown'}'),
+                            // Conditionally display brand label
+                            if (product.brand != null && product.brand!.isNotEmpty)
+                              Text('Brand: ${product.brand}'),
                             Text('Quantity: ${product.quantity ?? 0}'),
+                            // Display grammage and unit if available
+                            if (product.grammage != null && product.unit != null)
+                              Text('Grammage: ${product.grammage} ${product.unit}'),
                             expirationDateFormatted != null
                                 ? GestureDetector(
                               onTap: () => _pickDate(product, context),  // Add Date Picker functionality
