@@ -101,17 +101,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           children: [
                             if (product.brand != null && product.brand!.isNotEmpty)
                               Text('Brand: ${product.brand}'),
-                            // Wyświetl Quantity tylko, jeśli nie jest null i jest różne od 0
                             if (product.quantity != null && product.quantity!.isNotEmpty && product.quantity != "0")
                               Text('Quantity: ${product.quantity}'),
-                            // Wyświetl Grammage tylko, jeśli jest dostępne
                             if (product.grammage != null && product.unit != null)
                               Text('Quantity: ${product.grammage} ${product.unit}'),
-                            if (expirationDateFormatted != null)
-                              GestureDetector(
-                                onTap: () => _pickDate(product, context),
-                                child: Text('Exp: $expirationDateFormatted', style: TextStyle(color: Colors.blue)),
-                              ),
+                              Text('Days to expire: ${product.expirationDays}'),
                           ],
                         ),
                         trailing: Row(
