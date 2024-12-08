@@ -105,7 +105,21 @@ class _CategoryScreenState extends State<CategoryScreen> {
                               Text('Quantity: ${product.quantity}'),
                             if (product.grammage != null && product.unit != null)
                               Text('Quantity: ${product.grammage} ${product.unit}'),
+                            if (product.expirationDays != null)
                               Text('Days to expire: ${product.expirationDays}'),
+                            if (product.expirationDays == null && product.expirationDate != null)
+                              GestureDetector(
+                                onTap: () {
+                                  _pickDate(product, context);
+                                },
+                                child: Text(
+                                  'Exp Date: ${DateFormat('yyyy-MM-dd').format(product.expirationDate!)}',
+                                  style: TextStyle(
+                                    decoration: TextDecoration.underline,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                         trailing: Row(
@@ -246,5 +260,20 @@ class _CategoryScreenState extends State<CategoryScreen> {
         );
       });
     }
+  }
+
+  void _updateExpirationDays(Product product, int newDays) {
+    MongoDBHelper.updateExpirationDays(product, newDays).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Updated expiration days to $newDays')),
+      );
+      setState(() {
+        _loadProducts();
+      });
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating expiration days: $error')),
+      );
+    });
   }
 }

@@ -91,6 +91,33 @@ class MongoDBHelper {
     }
   }
 
+  // Update product expiration days
+  static Future<void> updateExpirationDays(Product product, int newExpirationDays) async {
+    try {
+      DbCollection collection = await connect();
+
+      if (product.id == null) {
+        print('Product does not have a valid ID');
+        return;
+      }
+
+      var objectId = ObjectId.fromHexString(product.id!);
+      var result = await collection.update(
+        where.eq('_id', objectId),
+        modify.set('expirationDays', newExpirationDays),
+      );
+
+      if (result['nModified'] > 0) {
+        print('Successfully updated expirationDays to $newExpirationDays');
+      } else {
+        print('No documents were modified.');
+      }
+    } catch (e) {
+      print('Failed to update expiration days: $e');
+    }
+  }
+
+
   // Fetch products by category with optional sorting by expiration date
   static Future<List<Product>> getProductsByCategory(String category, {bool ascending = true}) async {
     try {
