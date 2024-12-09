@@ -89,9 +89,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     itemCount: products.length,
                     itemBuilder: (context, index) {
                       final product = products[index];
-                      final expirationDateFormatted = product.expirationDate != null
-                          ? DateFormat('yyyy-MM-dd').format(product.expirationDate!)
-                          : null;
 
                       return ListTile(
                         leading: Icon(Icons.fastfood),
@@ -101,13 +98,42 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           children: [
                             if (product.brand != null && product.brand!.isNotEmpty)
                               Text('Brand: ${product.brand}'),
-                            if (product.quantity != null && product.quantity!.isNotEmpty && product.quantity != "0")
+                            if (product.quantity != null &&
+                                product.quantity!.isNotEmpty &&
+                                product.quantity != "0")
                               Text('Quantity: ${product.quantity}'),
                             if (product.grammage != null && product.unit != null)
                               Text('Quantity: ${product.grammage} ${product.unit}'),
                             if (product.expirationDays != null)
-                              Text('Days to expire: ${product.expirationDays}'),
-                            if (product.expirationDays == null && product.expirationDate != null)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text('Days to expire: '),
+                                  DropdownButton<int>(
+                                    value: product.expirationDays,
+                                    underline: SizedBox(),
+                                    items: [2, 3, 5].map((int value) {
+                                      return DropdownMenuItem<int>(
+                                        value: value,
+                                        child: Text(
+                                          value.toString(),
+                                          style: TextStyle(
+                                            decoration: TextDecoration.underline,
+                                            color: Colors.blue,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (int? newValue) {
+                                      if (newValue != null) {
+                                        _updateExpirationDays(product, newValue);
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                            if (product.expirationDays == null &&
+                                product.expirationDate != null)
                               GestureDetector(
                                 onTap: () {
                                   _pickDate(product, context);
@@ -134,12 +160,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
                             FutureBuilder<int>(
                               future: MongoDBHelper.getProductQuantityCount(product.id!),
                               builder: (context, quantitySnapshot) {
-                                if (quantitySnapshot.connectionState == ConnectionState.waiting) {
+                                if (quantitySnapshot.connectionState ==
+                                    ConnectionState.waiting) {
                                   return CircularProgressIndicator();
                                 } else if (quantitySnapshot.hasError) {
                                   return Text('Error');
                                 } else if (quantitySnapshot.hasData) {
-                                  int currentQuantity = quantitySnapshot.data ?? 0;
+                                  int currentQuantity =
+                                      quantitySnapshot.data ?? 0;
                                   return Text('$currentQuantity');
                                 } else {
                                   return Text('0');
@@ -176,7 +204,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
     MongoDBHelper.getProductQuantityCount(product.id!).then((currentQuantity) {
       final newQuantityCount = currentQuantity + change;
       if (newQuantityCount >= 0) {
-        MongoDBHelper.updateProductQuantityCount(product, newQuantityCount).then((_) {
+        MongoDBHelper.updateProductQuantityCount(product, newQuantityCount)
+            .then((_) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Updated quantity to $newQuantityCount')),
           );
@@ -238,7 +267,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     });
   }
 
-  Future<void> _pickDate(Product product, BuildContext context) async {
+  void _pickDate(Product product, BuildContext context) async {
     DateTime? selectedDate = await showDatePicker(
       context: context,
       initialDate: product.expirationDate ?? DateTime.now(),
@@ -249,7 +278,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
     if (selectedDate != null && selectedDate != product.expirationDate) {
       MongoDBHelper.updateProductExpirationDate(product, selectedDate).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Expiration date updated to ${DateFormat('yyyy-MM-dd').format(selectedDate)}')),
+          SnackBar(
+              content: Text(
+                  'Expiration date updated to ${DateFormat('yyyy-MM-dd').format(selectedDate)}')),
         );
         setState(() {
           _loadProducts();
