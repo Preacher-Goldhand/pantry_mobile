@@ -134,17 +134,22 @@ class _CategoryScreenState extends State<CategoryScreen> {
                               ),
                             if (product.expirationDays == null &&
                                 product.expirationDate != null)
-                              GestureDetector(
-                                onTap: () {
-                                  _pickDate(product, context);
-                                },
-                                child: Text(
-                                  'Exp Date: ${DateFormat('yyyy-MM-dd').format(product.expirationDate!)}',
-                                  style: TextStyle(
-                                    decoration: TextDecoration.underline,
-                                    color: Colors.blue,
+                              Row(
+                                children: [
+                                  Text('Exp Date: '),
+                                  GestureDetector(
+                                    onTap: () {
+                                      _pickDate(product, context);
+                                    },
+                                    child: Text(
+                                      DateFormat('yyyy-MM-dd').format(product.expirationDate!),
+                                      style: TextStyle(
+                                        decoration: TextDecoration.underline,
+                                        color: Colors.blue,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
                           ],
                         ),
